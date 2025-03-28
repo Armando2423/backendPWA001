@@ -1,4 +1,4 @@
-/* equire('dotenv').config({path: './.env'}); */
+require('dotenv').config({path: './.env'}); 
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -11,12 +11,12 @@ const User = require('./models/Users');
 
 const app = express();
 const IP = '0.0.0.0';
-const PORT ='3000';
+const PORT = process.env.PORT || 3000;
 
 app.use(cors({ origin: '*' }));
 app.use(express.json());
 
-const uri = "mongodb+srv://sergioreyes21m:uqN0xHQywn9YSDje@cluster001.wegka.mongodb.net/?retryWrites=true&w=majority&appName=Cluster001";
+const uri = process.env.MONGO_URI;
 
 // Conexión con mongoose
 mongoose.connect(uri)
