@@ -1,4 +1,4 @@
-r/* equire('dotenv').config({path: './.env'}); */
+/* equire('dotenv').config({path: './.env'}); */
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
