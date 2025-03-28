@@ -16,7 +16,7 @@ const PORT ='3000';
 app.use(cors({ origin: '*' }));
 app.use(express.json());
 
-const uri = process.env.MONGO_URI;
+const uri = "mongodb+srv://sergioreyes21m:uqN0xHQywn9YSDje@cluster001.wegka.mongodb.net/?retryWrites=true&w=majority&appName=Cluster001";
 
 // Conexión con mongoose
 mongoose.connect(uri)
