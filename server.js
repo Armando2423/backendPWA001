@@ -10,7 +10,6 @@ const User = require('./models/Users');
 /* const TempID = require('./models/TempID'); */
 
 const app = express();
-const IP = '0.0.0.0';
 const PORT = process.env.PORT || 3000;
 
 app.use(cors({ origin: '*' }));
@@ -106,6 +105,6 @@ app.post('/save-subscription', async (req, res) => {
   }
 });
 
-app.listen(PORT, IP, () => {
-  console.log(`🚀 Servidor corriendo en http://${IP}:${PORT}`);
+app.listen(PORT, () => {
+  console.log(`🚀 Servidor corriendo en ${PORT}`);
 }); 
