@@ -16,7 +16,7 @@ app.use(cors({ origin: '*' }));
 app.use(express.json());
 
 webpush.setVapidDetails(
-  'sergio.reyes.21m@utzmg.edu.mx',
+  'mailto: sergio.reyes.21m@utzmg.edu.mx',
   process.env.PUBLIC_VAPID_KEY,
   process.env.PRIVATE_VAPID_KEY,
 )
