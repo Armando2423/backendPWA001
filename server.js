@@ -4,9 +4,9 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-
+const webpush = require('web-push');
 const User = require('./models/Users');
-/* const Suscription = require('./models/Subscription'); */
+const Subscription = require('./models/Subscription'); 
 /* const TempID = require('./models/TempID'); */
 
 const app = express();
@@ -14,6 +14,12 @@ const PORT = process.env.PORT || 3000;
 
 app.use(cors({ origin: '*' }));
 app.use(express.json());
+
+webpush.setVapidDetails(
+  'sergio.reyes.21m@utzmg.edu.mx',
+  process.env.PUBLIC_VAPID_KEY,
+  process.env.PRIVATE_VAPID_KEY,
+)
 
 const uri = process.env.MONGO_URI;
 
@@ -94,17 +100,31 @@ app.get('/users', async (req, res) => {
 }); 
 
 // Ruta para guardar la suscripción en la base de datos
-app.post('/save-subscription', async (req, res) => {
+app.post('/send-notification', async (req, res) => {
   try {
-    const subscription = req.body.subscription;
-    const newSubscription = new Subscription(subscription);
-    await newSubscription.save();
-    res.status(201).json({ message: 'Suscripción guardada' });
+      const { title, body } = req.body;
+      const subscriptions = await Subscription.find(); // Obtiene todas las suscripciones
+
+      if (!subscriptions.length) {
+          return res.status(404).json({ message: "No hay suscriptores registrados" });
+      }
+
+      const payload = JSON.stringify({ title, body });
+
+      const sendPromises = subscriptions.map(subscription =>
+          webpush.sendNotification(subscription, payload).catch(err => console.error('Error enviando notificación:', err))
+      );
+
+      await Promise.all(sendPromises);
+
+      res.status(200).json({ message: "Notificación enviada con éxito" });
   } catch (error) {
-    res.status(500).json({ error: 'Error al guardar la suscripción', details: error });
+      console.error("❌ Error al enviar la notificación:", error);
+      res.status(500).json({ message: "Error en el servidor" });
   }
 });
 
+
 app.listen(PORT, () => {
-  console.log(`🚀 Servidor corriendo en puerto: ${PORT}`);
+  console.log(`🚀 Servidor personal corriendo en puerto: ${PORT}`);
 }); 
