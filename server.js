@@ -102,11 +102,17 @@ app.get('/users', async (req, res) => {
 // Ruta para guardar la suscripción en la base de datos
 app.post('/send-notification', async (req, res) => {
   try {
-      const { title, body } = req.body;
-      const subscriptions = await Subscription.find(); // Obtiene todas las suscripciones
+      const { email, title, body } = req.body;
+
+      const user = await User.findOne({ email });
+      if (!user) {
+          return res.status(404).json({ message: "Usuario no encontrado" });
+      }
+
+      const subscriptions = await Subscription.find({ userId: user._id });
 
       if (!subscriptions.length) {
-          return res.status(404).json({ message: "No hay suscriptores registrados" });
+          return res.status(404).json({ message: "No hay suscripción registrada para este usuario" });
       }
 
       const payload = JSON.stringify({ title, body });
@@ -123,6 +129,35 @@ app.post('/send-notification', async (req, res) => {
       res.status(500).json({ message: "Error en el servidor" });
   }
 });
+
+
+app.post('/save-subscription', async (req, res) => {
+  try {
+      const { email, subscription } = req.body;
+
+      if (!email || !subscription) {
+          return res.status(400).json({ message: "Faltan datos" });
+      }
+
+      const user = await User.findOne({ email });
+      if (!user) {
+          return res.status(404).json({ message: "Usuario no encontrado" });
+      }
+
+      // Guardar suscripción con el ID del usuario
+      const newSubscription = new Subscription({
+          userId: user._id,
+          ...subscription
+      });
+
+      await newSubscription.save();
+      res.status(201).json({ message: "Suscripción guardada correctamente" });
+  } catch (error) {
+      console.error("❌ Error al guardar suscripción:", error);
+      res.status(500).json({ message: "Error en el servidor" });
+  }
+});
+
 
 
 app.listen(PORT, () => {

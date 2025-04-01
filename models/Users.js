@@ -7,6 +7,6 @@ const UserSchema  = new mongoose.Schema({
     email:  {type: String, unique: true},
     pwd: { type: String, required: true },
     rol: { type: String, default: 'user' } // Si no se proporciona, será "user"
-});
+}); 
 
 module.exports = mongoose.model('User', UserSchema);
