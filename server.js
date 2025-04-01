@@ -100,7 +100,7 @@ app.get('/users', async (req, res) => {
   }
 }); 
 
-app.post('/save-subscription', async (req, res) => {
+app.post('/save_subscription', async (req, res) => {
   try {
       const { email, subscription } = req.body;
       if (!email || !subscription) {
@@ -126,7 +126,7 @@ app.post('/save-subscription', async (req, res) => {
 });
 
 // Ruta para guardar la suscripción en la base de datos
-app.post('/send-notification', async (req, res) => {
+app.post('/send_notification', async (req, res) => {
   try {
       const { email, title, body } = req.body;
       const user = await User.findOne({ email });
