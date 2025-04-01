@@ -99,38 +99,6 @@ app.get('/users', async (req, res) => {
   }
 }); 
 
-// Ruta para guardar la suscripción en la base de datos
-app.post('/send-notification', async (req, res) => {
-  try {
-      const { email, title, body } = req.body;
-
-      const user = await User.findOne({ email });
-      if (!user) {
-          return res.status(404).json({ message: "Usuario no encontrado" });
-      }
-
-      const subscriptions = await Subscription.find({ userId: user._id });
-
-      if (!subscriptions.length) {
-          return res.status(404).json({ message: "No hay suscripción registrada para este usuario" });
-      }
-
-      const payload = JSON.stringify({ title, body });
-
-      const sendPromises = subscriptions.map(subscription =>
-          webpush.sendNotification(subscription, payload).catch(err => console.error('Error enviando notificación:', err))
-      );
-
-      await Promise.all(sendPromises);
-
-      res.status(200).json({ message: "Notificación enviada con éxito" });
-  } catch (error) {
-      console.error("❌ Error al enviar la notificación:", error);
-      res.status(500).json({ message: "Error en el servidor" });
-  }
-});
-
-
 app.post('/save-subscription', async (req, res) => {
   try {
       const { email, subscription } = req.body;
@@ -139,24 +107,42 @@ app.post('/save-subscription', async (req, res) => {
           return res.status(400).json({ message: "Faltan datos" });
       }
 
-      const user = await User.findOne({ email });
-      if (!user) {
-          return res.status(404).json({ message: "Usuario no encontrado" });
-      }
+      await User.findOneAndUpdate(
+          { email },
+          { subscription },
+          { new: true }
+      );
 
-      // Guardar suscripción con el ID del usuario
-      const newSubscription = new Subscription({
-          userId: user._id,
-          ...subscription
-      });
-
-      await newSubscription.save();
-      res.status(201).json({ message: "Suscripción guardada correctamente" });
+      res.status(200).json({ message: "Suscripción guardada con éxito" });
   } catch (error) {
-      console.error("❌ Error al guardar suscripción:", error);
+      console.error("❌ Error al guardar la suscripción:", error);
       res.status(500).json({ message: "Error en el servidor" });
   }
 });
+
+
+// Ruta para guardar la suscripción en la base de datos
+app.post('/send-notification', async (req, res) => {
+  try {
+      const { email, title, body } = req.body;
+      const user = await User.findOne({ email });
+
+      if (!user || !user.subscription) {
+          return res.status(404).json({ message: "El usuario no tiene suscripción" });
+      }
+
+      const payload = JSON.stringify({ title, body });
+
+      await webpush.sendNotification(user.subscription, payload)
+          .catch(err => console.error('Error enviando notificación:', err));
+
+      res.status(200).json({ message: "Notificación enviada con éxito" });
+  } catch (error) {
+      console.error("❌ Error al enviar la notificación:", error);
+      res.status(500).json({ message: "Error en el servidor" });
+  }
+});
+
 
 
 
