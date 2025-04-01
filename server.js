@@ -6,7 +6,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const webpush = require('web-push');
 const User = require('./models/Users');
-const Subscription = require('./models/Subscription');
+const Subscription = require('./models/Suscription');
 /* const Subscription  = require('./models/Suscription');  */
 /* const TempID = require('./models/TempID'); */
 
