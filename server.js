@@ -6,6 +6,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const webpush = require('web-push');
 const User = require('./models/Users');
+const Subscription = require('./models/Subscription');
 /* const Subscription  = require('./models/Suscription');  */
 /* const TempID = require('./models/TempID'); */
 
@@ -102,15 +103,19 @@ app.get('/users', async (req, res) => {
 app.post('/save-subscription', async (req, res) => {
   try {
       const { email, subscription } = req.body;
-
       if (!email || !subscription) {
           return res.status(400).json({ message: "Faltan datos" });
       }
 
-      await User.findOneAndUpdate(
-          { email },
-          { subscription },
-          { new: true }
+      const user = await User.findOne({ email });
+      if (!user) {
+          return res.status(404).json({ message: "Usuario no encontrado" });
+      }
+
+      await Subscription.findOneAndUpdate(
+          { userId: user._id },
+          { userId: user._id, ...subscription },
+          { upsert: true, new: true }
       );
 
       res.status(200).json({ message: "Suscripción guardada con éxito" });
@@ -120,20 +125,23 @@ app.post('/save-subscription', async (req, res) => {
   }
 });
 
-
 // Ruta para guardar la suscripción en la base de datos
 app.post('/send-notification', async (req, res) => {
   try {
       const { email, title, body } = req.body;
       const user = await User.findOne({ email });
+      if (!user) {
+          return res.status(404).json({ message: "Usuario no encontrado" });
+      }
 
-      if (!user || !user.subscription) {
+      const subscription = await Subscription.findOne({ userId: user._id });
+      if (!subscription) {
           return res.status(404).json({ message: "El usuario no tiene suscripción" });
       }
 
       const payload = JSON.stringify({ title: String(title), body: String(body) });
 
-      await webpush.sendNotification(user.subscription, payload)
+      await webpush.sendNotification(subscription, payload)
           .catch(err => console.error('Error enviando notificación:', err));
 
       res.status(200).json({ message: "Notificación enviada con éxito" });
@@ -142,7 +150,6 @@ app.post('/send-notification', async (req, res) => {
       res.status(500).json({ message: "Error en el servidor" });
   }
 });
-
 
 
 
