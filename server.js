@@ -6,7 +6,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const webpush = require('web-push');
 const User = require('./models/Users');
-const Subscription = require('./models/Suscription'); 
+/* const Subscription  = require('./models/Suscription');  */
 /* const TempID = require('./models/TempID'); */
 
 const app = express();
@@ -131,7 +131,7 @@ app.post('/send-notification', async (req, res) => {
           return res.status(404).json({ message: "El usuario no tiene suscripción" });
       }
 
-      const payload = JSON.stringify({ title, body });
+      const payload = JSON.stringify({ title: String(title), body: String(body) });
 
       await webpush.sendNotification(user.subscription, payload)
           .catch(err => console.error('Error enviando notificación:', err));
