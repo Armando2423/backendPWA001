@@ -9,7 +9,7 @@ const path = require('path');
 const { readFileSync } = require('fs');
 
 // 📌 Importamos el modelo de usuario (incluye la suscripción)
-const User = require('./models/User');
+const User = require('./models/Users');
 
 // 📌 Configuración de claves VAPID para Web Push
 const keys_rute = path.resolve('keys.json');
