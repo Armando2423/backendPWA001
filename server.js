@@ -36,28 +36,37 @@ mongoose.connect(process.env.MONGO_URI)
 
 // 📌 Registro de usuario con contraseña encriptada
 app.post('/register', async (req, res) => {
-    try { 
-      console.log("Datos recibidos:", req.body);
-      const { name, app, apm, email, pwd } = req.body;
+  try { 
+    console.log("Datos recibidos:", req.body);
+    const { name, app, apm, email, pwd, subscription } = req.body; // <-- 📌 Asegurar que recibimos subscription
 
-      if (!pwd) return res.status(400).json({ message: 'La contraseña es obligatoria' });
+    if (!pwd) return res.status(400).json({ message: 'La contraseña es obligatoria' });
 
-      const existingUser = await User.findOne({ email });
-      if (existingUser) return res.status(400).json({ message: 'El correo ya está registrado' });
+    const existingUser = await User.findOne({ email });
+    if (existingUser) return res.status(400).json({ message: 'El correo ya está registrado' });
 
-      // Encriptar contraseña
-      const hashedPassword = await bcrypt.hash(pwd, 10);
+    // Encriptar contraseña
+    const hashedPassword = await bcrypt.hash(pwd, 10);
 
-      const newUser = new User({ name, app, apm, email, pwd: hashedPassword });
-      await newUser.save();
-      console.log("Usuario guardado en la base de datos.");
+    const newUser = new User({ 
+        name, 
+        app, 
+        apm, 
+        email, 
+        pwd: hashedPassword, 
+        subscription // <-- 📌 Guardamos la suscripción en la base de datos
+    });
 
-      res.status(201).json({ message: 'Registro exitoso' });
-    } catch (error) {
-      console.error('❌ Error al registrar usuario:', error);
-      res.status(500).json({ message: 'Error en el servidor' });
-    }
+    await newUser.save();
+    console.log("Usuario guardado en la base de datos con suscripción.");
+
+    res.status(201).json({ message: 'Registro exitoso' });
+  } catch (error) {
+    console.error('❌ Error al registrar usuario:', error);
+    res.status(500).json({ message: 'Error en el servidor' });
+  }
 });
+
 
 // 📌 Login con comparación de contraseña encriptada
 app.post('/login', async (req, res) => {
